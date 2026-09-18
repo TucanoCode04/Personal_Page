@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Photon Circuit — Scroll Scene Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;650;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    --bg: #030207;
+    --violet: #8b5cf6;
+    --magenta: #ec4899;
+    --text: #f3ecff;
+    --text-dim: #9a8fc2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--bg); font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: var(--text); scroll-behavior: smooth; }
+  h1, h2, .timeline-title, .cv-button, .name-hero { font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif; }
+
+  #scroll-track { position: relative; }
+  #stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+  }
+  #canvas-holder { position: absolute; inset: 0; }
+  canvas { display: block; }
+
+  #vignette {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 45%, rgba(3,2,7,0.85) 100%);
+    z-index: 2;
+  }
+
+  #copy {
+    position: absolute;
+    left: 7vw; top: 50%;
+    transform: translateY(-50%);
+    max-width: 32ch;
+    z-index: 3;
+    pointer-events: none;
+  }
+  #copy .eyebrow {
+    color: var(--magenta);
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 12px;
+    transition: opacity 0.25s ease;
+  }
+  #copy h1 {
+    font-size: clamp(1.7rem, 3.6vw, 2.9rem);
+    line-height: 1.1;
+    margin: 0 0 14px 0;
+    font-weight: 650;
+    transition: opacity 0.25s ease;
+  }
+  #copy p {
+    color: var(--text-dim);
+    line-height: 1.55;
+    margin: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  #progress {
+    position: absolute;
+    right: 5vw; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 14px;
+    z-index: 3;
+  }
+  .node-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(214,201,255,0.25);
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .node-dot.active {
+    background: var(--magenta);
+    box-shadow: 0 0 10px var(--magenta), 0 0 20px var(--violet);
+    transform: scale(1.3);
+  }
+
+  #note {
+    position: fixed;
+    top: 16px; left: 16px;
+    z-index: 10;
+    background: rgba(20,10,35,0.7);
+    border: 1px solid rgba(168,85,247,0.3);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    max-width: 280px;
+    backdrop-filter: blur(6px);
+  }
+
+  #scroll-hint {
+    position: absolute;
+    bottom: 26px; left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-dim);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+    z-index: 3;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  #scroll-hint .chevron {
+    width: 9px; height: 9px;
+    border-right: 1.5px solid var(--text);
+    border-bottom: 1.5px solid var(--text);
+    transform: rotate(45deg);
+    animation: bob 1.6s ease-in-out infinite;
+  }
+  @keyframes bob { 0%,100%{ transform: translateY(0) rotate(45deg);} 50%{ transform: translateY(6px) rotate(45deg);} }
+
+  #after {
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8vw;
+    text-align: center;
+    color: var(--text-dim);
+  }
+
+  #connector-labels { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+  .connector-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(15, 6, 26, 0.72);
+    border: 1px solid rgba(236, 72, 153, 0.55);
+    color: var(--text);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    text-decoration: none;
+    opacity: 0;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 16px rgba(236, 72, 153, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .connector-label:hover {
+    box-shadow: 0 0 24px rgba(236, 72, 153, 0.5);
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+
+  .site-section {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10vw 6vw;
+    border-top: 1px solid rgba(139, 92, 246, 0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .site-section::before {
+    content: '';
+    position: absolute;
+    top: -30%; left: 50%;
+    width: 900px; height: 900px;
+    background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 60%);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .section-inner { position: relative; z-index: 1; width: 100%; max-width: 880px; }
+  .site-section h2 {
+    font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+    margin: 0 0 44px 0;
+    text-align: center;
+    font-weight: 650;
+    background: linear-gradient(90deg, var(--violet), var(--magenta));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- About: hero card + language meters ---------- */
+  .about-hero { text-align: center; margin-bottom: 48px; }
+  .name-hero { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; margin: 0 0 10px 0; }
+  .about-tagline { color: var(--text-dim); font-size: 1.05rem; }
+  .lang-meters { display: flex; flex-direction: column; gap: 18px; max-width: 420px; margin: 0 auto; }
+  .lang-row { display: flex; align-items: center; gap: 14px; }
+  .lang-name { width: 90px; text-align: left; font-size: 0.92rem; flex-shrink: 0; }
+  .lang-track { flex: 1; height: 6px; border-radius: 999px; background: rgba(139,92,246,0.12); overflow: hidden; }
+  .lang-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--violet), var(--magenta)); }
+  .lang-level { width: 32px; text-align: right; font-size: 0.8rem; color: var(--magenta); flex-shrink: 0; }
+
+  /* ---------- Experience / Education: connected timeline ---------- */
+  .timeline-v2 { position: relative; padding-left: 30px; display: flex; flex-direction: column; gap: 40px; }
+  .timeline-v2::before {
+    content: '';
+    position: absolute;
+    left: 5px; top: 6px; bottom: 6px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--violet), var(--magenta));
+    opacity: 0.4;
+  }
+  .tl-item { position: relative; text-align: left; }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -30px; top: 4px;
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--magenta);
+    box-shadow: 0 0 10px rgba(236,72,153,0.5);
+  }
+  .tl-title { font-weight: 650; font-size: 1.1rem; }
+  .tl-date { color: var(--magenta); font-size: 0.78rem; letter-spacing: 0.03em; margin: 3px 0 8px 0; }
+  .tl-item p { margin: 0; max-width: 52ch; color: var(--text-dim); line-height: 1.55; font-size: 0.94rem; }
+
+  /* ---------- Projects: card grid ---------- */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+  }
+  .project-card {
+    text-align: left;
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    border-radius: 14px;
+    padding: 20px;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+  .project-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(236, 72, 153, 0.5);
+    background: rgba(139, 92, 246, 0.09);
+  }
+  .project-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(236, 72, 153, 0.14);
+    color: var(--magenta);
+    margin-bottom: 12px;
+  }
+  .project-card h3 { margin: 0 0 4px 0; font-size: 1.02rem; font-weight: 600; }
+  .project-year { color: var(--text-dim); font-size: 0.76rem; margin-bottom: 10px; }
+  .project-card p { margin: 0; color: var(--text-dim); font-size: 0.88rem; line-height: 1.5; }
+
+  /* ---------- Contact: icon card ---------- */
+  .contact-card { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+  .contact-rows { display: flex; flex-direction: column; gap: 14px; }
+  .contact-row { display: flex; align-items: center; gap: 12px; font-size: 1rem; }
+  .contact-row svg { flex-shrink: 0; opacity: 0.85; }
+  .contact-links { display: flex; gap: 14px; }
+  .icon-link {
+    display: flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    color: var(--text-dim);
+    transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+  .icon-link:hover { border-color: var(--magenta); color: var(--text); transform: translateY(-2px); }
+
+  .inline-link {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(236, 72, 153, 0.5);
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .inline-link:hover {
+    color: var(--magenta);
+    border-color: var(--magenta);
+  }
+
+  .cv-button {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--violet), var(--magenta));
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .cv-button:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 28px rgba(236, 72, 153, 0.5);
+  }
+</style>
+</head>
+<body>
+
+<div id="note">Photon travels the circuit as you scroll — each node lights up as it passes. Placeholder copy per section; swap in your real content.</div>
+
+<div id="scroll-track" style="height: 600vh;">
+  <div id="stage">
+    <div id="canvas-holder"></div>
+    <div id="vignette"></div>
+
+    <div id="copy">
+      <div class="eyebrow" id="eyebrow">Init</div>
+      <h1 id="headline">Photon entering the circuit</h1>
+      <p id="subline">Everything on this site starts here — follow the light.</p>
+    </div>
+
+    <div id="progress">
+      <div class="node-dot" data-i="0"></div>
+      <div class="node-dot" data-i="1"></div>
+      <div class="node-dot" data-i="2"></div>
+      <div class="node-dot" data-i="3"></div>
+    </div>
+
+    <div id="scroll-hint"><span>scroll</span><span class="chevron"></span></div>
+
+    <div id="connector-labels"></div>
+  </div>
+</div>
+
+<div id="about" class="site-section">
+  <div class="section-inner">
+    <h2>About</h2>
+    <div class="about-hero">
+      <div class="name-hero">Davide Donati</div>
+      <div class="about-tagline">Quantum engineering student, builder, competitive volleyball player.</div>
+    </div>
+    <div class="lang-meters">
+      <div class="lang-row"><span class="lang-name">English</span><div class="lang-track"><div class="lang-fill" style="width:95%"></div></div><span class="lang-level">C2</span></div>
+      <div class="lang-row"><span class="lang-name">Spanish</span><div class="lang-track"><div class="lang-fill" style="width:65%"></div></div><span class="lang-level">B2</span></div>
+      <div class="lang-row"><span class="lang-name">German</span><div class="lang-track"><div class="lang-fill" style="width:45%"></div></div><span class="lang-level">B1</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="experience" class="site-section">
+  <div class="section-inner">
+    <h2>Experience</h2>
+    <div class="timeline-v2">
+      <div class="tl-item">
+        <div class="tl-title">QubiTO — Politecnico di Torino</div>
+        <div class="tl-date">2025 — present</div>
+        <p>Member of Italy's first quantum computing student team, doing research on quantum algorithms and control electronics.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-title">Professional Volleyball Player</div>
+        <p><a class="inline-link" href="https://www.legavolley.it/player/DON-DAV-00" target="_blank" rel="noopener">Player profile — Lega Volley →</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="education" class="site-section">
+  <div class="section-inner">
+    <h2>Education</h2>
+    <div class="timeline-v2">
+      <div class="tl-item">
+        <div class="tl-title">Politecnico di Torino</div>
+        <div class="tl-date">Sep 2025 — Dec 2027</div>
+        <p>Master's degree, Quantum Engineering.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-title">Alma Mater Studiorum — Università di Bologna</div>
+        <div class="tl-date">Sep 2021 — Mar 2025</div>
+        <p>Bachelor's degree, Informatics — with a focus on artificial intelligence and quantum engineering.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-title">ISIS J.M. Keynes</div>
+        <div class="tl-date">Sep 2013 — Jun 2019</div>
+        <p>High School Diploma, Linguistic track — English, Spanish, German.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="projects" class="site-section">
+  <div class="section-inner">
+    <h2>Projects</h2>
+    <div class="project-grid">
+      <div class="project-card">
+        <span class="project-tag">C++</span>
+        <h3>gioco_UNIBO-Programmazione</h3>
+        <div class="project-year">2021</div>
+        <p>Programming course project, University of Bologna.</p>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">C</span>
+        <h3>PandOS23</h3>
+        <div class="project-year">2023</div>
+        <p>Operating Systems course project, University of Bologna.</p>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">JavaScript</span>
+        <h3>Chesscake</h3>
+        <div class="project-year">2023 — 2024</div>
+        <p>Software Engineering course project, University of Bologna.</p>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">JavaScript</span>
+        <h3>Selfie</h3>
+        <div class="project-year">2024</div>
+        <p>Web Technologies course project, University of Bologna.</p>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">Thesis</span>
+        <h3>Bachelor's Thesis</h3>
+        <div class="project-year">2025</div>
+        <p>A hybrid quantum machine learning algorithm for reconstructing missing entries in a database.</p>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">Research</span>
+        <h3>Qubit Electronics Reports</h3>
+        <div class="project-year">2025 — present</div>
+        <p>Independent research and reports on qubit control electronics.</p>
+      </div>
+      <div class="project-card">
+        <span class="project-tag">HPC</span>
+        <h3>HPC Project</h3>
+        <div class="project-year">2025 — present</div>
+        <p>Working with Politecnico di Torino's high-performance computing infrastructure.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="contact" class="site-section">
+  <div class="section-inner contact-card">
+    <h2 style="margin-bottom: 0;">Contact</h2>
+    <div class="contact-rows">
+      <div class="contact-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+        <a class="inline-link" href="mailto:donatidavide5@gmail.com">donatidavide5@gmail.com</a>
+      </div>
+      <div class="contact-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <a class="inline-link" href="tel:+393319076926">+39 331 907 6926</a>
+      </div>
+    </div>
+    <div class="contact-links">
+      <a class="icon-link" href="https://github.com/TucanoCode04" target="_blank" rel="noopener" title="GitHub">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.73.5.98 5.24.98 11.52c0 4.98 3.23 9.2 7.71 10.69.56.1.77-.24.77-.54v-1.9c-3.14.68-3.8-1.51-3.8-1.51-.51-1.31-1.25-1.66-1.25-1.66-1.02-.7.08-.69.08-.69 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.94.1-.73.39-1.22.71-1.5-2.51-.29-5.15-1.26-5.15-5.6 0-1.24.44-2.25 1.16-3.04-.12-.29-.5-1.44.11-3 0 0 .95-.3 3.12 1.16a10.9 10.9 0 0 1 5.68 0c2.17-1.46 3.12-1.16 3.12-1.16.61 1.56.23 2.71.11 3 .72.79 1.16 1.8 1.16 3.04 0 4.35-2.65 5.31-5.17 5.59.4.35.76 1.03.76 2.09v3.09c0 .3.21.65.78.54 4.47-1.49 7.7-5.71 7.7-10.69C23.02 5.24 18.27.5 12 .5Z"/></svg>
+      </a>
+      <a class="icon-link" href="https://www.linkedin.com/in/davide-donati-82992133b/" target="_blank" rel="noopener" title="LinkedIn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27ZM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
+      </a>
+    </div>
+    <a id="cv-download" class="cv-button" href="Davide_Donati_CV.pdf" download>Download CV</a>
+  </div>
+</div>
+
+<script>
+(function(){
+  const sectionsData = [
+    { label: 'Init', title: 'Quantum engineering student', text: 'Politecnico di Torino.' },
+    { label: '01',   title: 'I like building things', text: 'software, hardware, whatever the problem needs.' },
+    { label: '02',   title: 'Some past projects', text: 'a browser chess app, an OS kernel exercise, and more.' },
+    { label: '03',   title: 'Currently exploring', text: 'quantum computing, and where it meets real hardware.' }
+  ];
+  const CHECKPOINT_COUNT = sectionsData.length;
+
+  // ---------- THREE.JS SETUP ----------
+  const holder = document.getElementById('canvas-holder');
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x030207, 0.02);
+
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x030207, 1);
+  holder.appendChild(renderer.domElement);
+
+  // ---------- CIRCUIT PATH: spiral diving forward into a chip ----------
+  const SPIRAL_TURNS = 2.4;
+  const START_RADIUS = 3.4;
+  const END_RADIUS = 0.35;
+  const TOTAL_DEPTH = 44;
+
+  function spiralPoint(u){
+    const angle = u * SPIRAL_TURNS * Math.PI * 2;
+    const radius = THREE.MathUtils.lerp(START_RADIUS, END_RADIUS, u);
+    const x = radius * Math.cos(angle);
+    const y = radius * Math.sin(angle) * 0.55;
+    const z = -u * TOTAL_DEPTH;
+    return new THREE.Vector3(x, y, z);
+  }
+
+  const SAMPLE_COUNT = 32;
+  const waypoints = [];
+  for (let i = 0; i < SAMPLE_COUNT; i++){
+    waypoints.push(spiralPoint(i / (SAMPLE_COUNT - 1)));
+  }
+  const curve = new THREE.CatmullRomCurve3(waypoints, false, 'catmullrom', 0.4);
+
+  // faint full-path trace (blueprint line, always visible)
+  const tracePts = curve.getPoints(200);
+  const traceGeo = new THREE.BufferGeometry().setFromPoints(tracePts);
+  const traceMat = new THREE.LineBasicMaterial({ color: 0x8b5cf6, transparent: true, opacity: 0.18 });
+  scene.add(new THREE.Line(traceGeo, traceMat));
+
+  // bright trail behind photon (rebuilt on scroll)
+  const trailMat = new THREE.LineBasicMaterial({ color: 0xf0308a, transparent: true, opacity: 0.85 });
+  let trailLine = new THREE.Line(new THREE.BufferGeometry(), trailMat);
+  scene.add(trailLine);
+
+  // ---------- QUBIT NODES ----------
+  const nodes = [];
+  for (let i = 0; i < CHECKPOINT_COUNT; i++){
+    const t = (i / (CHECKPOINT_COUNT - 1)) * 0.75;
+    const pos = curve.getPointAt(t);
+    const group = new THREE.Group();
+    group.position.copy(pos);
+
+    // faceted crystal core (replaces the plain icosahedron "ball")
+    const shellGeo = new THREE.DodecahedronGeometry(0.42, 0);
+    const shellMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, wireframe: true, transparent: true, opacity: 0.45 });
+    const shell = new THREE.Mesh(shellGeo, shellMat);
+    group.add(shell);
+
+    const coreGeo = new THREE.SphereGeometry(0.18, 16, 16);
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0xf0308a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    group.add(core);
+
+    const haloGeo = new THREE.SphereGeometry(0.42, 16, 16);
+    const haloMat = new THREE.MeshBasicMaterial({ color: 0xec4899, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    group.add(halo);
+
+    // three tilted orbital rings (like electron shells), each with its own orbiting marker
+    const ORBIT_TILTS = [
+      { x: 0,            y: 0 },
+      { x: Math.PI / 3,  y: 0.4 },
+      { x: -Math.PI / 3, y: -0.6 }
+    ];
+    const ringColors = [0x8b5cf6, 0xec4899, 0xa855f7];
+    const rings = [];
+    const orbitSpins = [];
+    ORBIT_TILTS.forEach((tilt, ri) => {
+      const radius = 0.6 + ri * 0.12;
+      const ringPivot = new THREE.Group();
+      ringPivot.rotation.set(tilt.x, tilt.y, 0);
+      group.add(ringPivot);
+
+      const ringGeo = new THREE.TorusGeometry(radius, 0.008, 8, 56);
+      const ringMat = new THREE.MeshBasicMaterial({ color: ringColors[ri], transparent: true, opacity: 0.38 });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringPivot.add(ringMesh);
+      rings.push(ringMesh);
+
+      const orbitSpin = new THREE.Group();
+      orbitSpin.rotation.z = (i * 1.3) + (ri * 2.1); // stagger starting phase per node/ring
+      ringPivot.add(orbitSpin);
+
+      const markerGeo = new THREE.SphereGeometry(0.045, 10, 10);
+      const markerMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+      const marker = new THREE.Mesh(markerGeo, markerMat);
+      marker.position.set(radius, 0, 0);
+      orbitSpin.add(marker);
+      orbitSpins.push(orbitSpin);
+    });
+
+    scene.add(group);
+    nodes.push({ group, shell, core, halo, rings, orbitSpins, baseT: t });
+  }
+
+  // ---------- PHOTON ----------
+  const photonGroup = new THREE.Group();
+  const photonCoreGeo = new THREE.SphereGeometry(0.09, 16, 16);
+  const photonCoreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, blending: THREE.AdditiveBlending, depthWrite: false });
+  const photonCore = new THREE.Mesh(photonCoreGeo, photonCoreMat);
+  photonGroup.add(photonCore);
+
+  const photonHaloGeo = new THREE.SphereGeometry(0.28, 16, 16);
+  const photonHaloMat = new THREE.MeshBasicMaterial({ color: 0xec4899, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+  const photonHalo = new THREE.Mesh(photonHaloGeo, photonHaloMat);
+  photonGroup.add(photonHalo);
+
+  const photonOuterGlowGeo = new THREE.SphereGeometry(0.55, 16, 16);
+  const photonOuterGlowMat = new THREE.MeshBasicMaterial({ color: 0x8b5cf6, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false });
+  const photonOuterGlow = new THREE.Mesh(photonOuterGlowGeo, photonOuterGlowMat);
+  photonGroup.add(photonOuterGlow);
+
+  scene.add(photonGroup);
+
+  // ---------- CHIP SURFACE (the thing we dive into at the end) ----------
+  function buildChipTexture(){
+    const size = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#050310';
+    ctx.fillRect(0, 0, size, size);
+
+    // faint base grid
+    ctx.strokeStyle = 'rgba(139,92,246,0.12)';
+    ctx.lineWidth = 1;
+    const cell = 32;
+    for (let x = 0; x <= size; x += cell){
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, size); ctx.stroke();
+    }
+    for (let y = 0; y <= size; y += cell){
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size, y); ctx.stroke();
+    }
+
+    // rectilinear "circuit trace" paths, glowing violet/magenta
+    function drawTrace(startX, startY, segments, color){
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.4;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      let x = startX, y = startY;
+      ctx.moveTo(x, y);
+      for (let i = 0; i < segments; i++){
+        if (Math.random() < 0.5){ x += (Math.random() < 0.5 ? 1 : -1) * cell * (1 + Math.floor(Math.random()*2)); }
+        else { y += (Math.random() < 0.5 ? 1 : -1) * cell * (1 + Math.floor(Math.random()*2)); }
+        x = Math.max(cell, Math.min(size - cell, x));
+        y = Math.max(cell, Math.min(size - cell, y));
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      // pad at the end
+      ctx.fillStyle = color;
+      ctx.fillRect(x - 3, y - 3, 6, 6);
+    }
+
+    const colors = ['#a855f7', '#ec4899', '#8b5cf6', '#f0308a'];
+    for (let i = 0; i < 26; i++){
+      const sx = Math.round((Math.random() * size) / cell) * cell;
+      const sy = Math.round((Math.random() * size) / cell) * cell;
+      drawTrace(sx, sy, 3 + Math.floor(Math.random() * 4), colors[i % colors.length]);
+    }
+
+    // bright core in the center, like a die center
+    const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size*0.22);
+    grad.addColorStop(0, 'rgba(240,48,138,0.55)');
+    grad.addColorStop(1, 'rgba(240,48,138,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  const chipTexture = buildChipTexture();
+  const chipZ = -(TOTAL_DEPTH + 7);
+  const chipGeo = new THREE.PlaneGeometry(26, 26);
+  const chipMat = new THREE.MeshBasicMaterial({ map: chipTexture, transparent: false });
+  const chipPlane = new THREE.Mesh(chipGeo, chipMat);
+  chipPlane.position.set(0, 0, chipZ);
+  scene.add(chipPlane);
+
+  // a subtle pulsing glow ring around the chip's center to sell the "arrival" moment
+  const chipGlowGeo = new THREE.RingGeometry(0.4, 2.4, 48);
+  const chipGlowMat = new THREE.MeshBasicMaterial({ color: 0xec4899, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
+  const chipGlow = new THREE.Mesh(chipGlowGeo, chipGlowMat);
+  chipGlow.position.set(0, 0, chipZ + 0.05);
+  scene.add(chipGlow);
+
+  // ---------- CONNECTOR EDGE PORTS (the real navigation, revealed on landing) ----------
+  // literal PCB edge connectors: a flush pad on the chip's border, two pin legs, and a
+  // small plug head sticking outward — the label sits right at that head, not on a floating cable
+  const CHIP_HALF = 13;
+  const CONNECTOR_DATA = [
+    { key: 'about',      label: 'About',      edge: 'top',    offset: -6, color: 0xa855f7 },
+    { key: 'projects',   label: 'Projects',   edge: 'top',    offset:  6, color: 0xec4899 },
+    { key: 'education',  label: 'Education',  edge: 'right',  offset:  2, color: 0x8b5cf6 },
+    { key: 'experience', label: 'Experience', edge: 'left',   offset: -2, color: 0xf0308a },
+    { key: 'contact',    label: 'Contact',    edge: 'bottom', offset:  0, color: 0xc026d3 }
+  ];
+  const EDGE_NORMALS = {
+    top:    new THREE.Vector3(0, 1, 0),
+    bottom: new THREE.Vector3(0, -1, 0),
+    left:   new THREE.Vector3(-1, 0, 0),
+    right:  new THREE.Vector3(1, 0, 0)
+  };
+  const EDGE_TANGENTS = {
+    top:    new THREE.Vector3(1, 0, 0),
+    bottom: new THREE.Vector3(1, 0, 0),
+    left:   new THREE.Vector3(0, 1, 0),
+    right:  new THREE.Vector3(0, 1, 0)
+  };
+
+  function buildEdgePort(edge, offset, color){
+    const normal = EDGE_NORMALS[edge];
+    const tangent = EDGE_TANGENTS[edge];
+    const padCenter = (edge === 'top' || edge === 'bottom')
+      ? new THREE.Vector3(offset, normal.y * CHIP_HALF, chipZ + 0.06)
+      : new THREE.Vector3(normal.x * CHIP_HALF, offset, chipZ + 0.06);
+    const headCenter = padCenter.clone().add(normal.clone().multiplyScalar(1.1));
+
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+    const group = new THREE.Group();
+
+    const padSize = (edge === 'top' || edge === 'bottom') ? [1.5, 0.55, 0.08] : [0.55, 1.5, 0.08];
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(...padSize), material);
+    pad.position.copy(padCenter);
+    group.add(pad);
+
+    [-0.4, 0.4].forEach((legOffset) => {
+      const legStart = padCenter.clone().add(tangent.clone().multiplyScalar(legOffset));
+      const legEnd = headCenter.clone().add(tangent.clone().multiplyScalar(legOffset));
+      const dist = legStart.distanceTo(legEnd);
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, dist, 6, 1, true), material);
+      leg.position.copy(legStart.clone().add(legEnd).multiplyScalar(0.5));
+      leg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), legEnd.clone().sub(legStart).normalize());
+      group.add(leg);
+    });
+
+    const headMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), headMat);
+    head.position.copy(headCenter);
+    group.add(head);
+
+    scene.add(group);
+    return { padMaterial: material, headMaterial: headMat, headMesh: head, headCenter };
+  }
+
+  const connectors = [];
+  CONNECTOR_DATA.forEach((c) => {
+    const { padMaterial, headMaterial, headMesh, headCenter } = buildEdgePort(c.edge, c.offset, c.color);
+    connectors.push({ ...c, padMaterial, headMaterial, headMesh, socketPos: headCenter });
+  });
+
+  // ---------- STAR FIELD ----------
+  const starCount = 900;
+  const starPositions = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++){
+    starPositions[i*3]     = (Math.random() - 0.5) * 60;
+    starPositions[i*3 + 1] = (Math.random() - 0.5) * 40;
+    starPositions[i*3 + 2] = (Math.random()) * -50 + 10;
+  }
+  const starGeo = new THREE.BufferGeometry();
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xcbb8ff, size: 0.05, transparent: true, opacity: 0.5 });
+  const stars = new THREE.Points(starGeo, starMat);
+  scene.add(stars);
+
+  // ---------- SCROLL-DRIVEN STATE ----------
+  const track = document.getElementById('scroll-track');
+  const headline = document.getElementById('headline');
+  const subline = document.getElementById('subline');
+  const eyebrow = document.getElementById('eyebrow');
+  const dots = Array.from(document.querySelectorAll('.node-dot'));
+  const labelContainer = document.getElementById('connector-labels');
+
+  const labelEls = connectors.map((c) => {
+    const a = document.createElement('a');
+    a.className = 'connector-label';
+    a.href = '#' + c.key;
+    a.textContent = c.label;
+    labelContainer.appendChild(a);
+    return a;
+  });
+
+  const tmpVec = new THREE.Vector3();
+  function projectToScreen(obj3d){
+    tmpVec.setFromMatrixPosition(obj3d.matrixWorld);
+    tmpVec.project(camera);
+    return {
+      x: (tmpVec.x * 0.5 + 0.5) * window.innerWidth,
+      y: (-tmpVec.y * 0.5 + 0.5) * window.innerHeight
+    };
+  }
+
+  let currentT = 0;
+  let landingT = 0;
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  function updateFromScroll(){
+    const rect = track.getBoundingClientRect();
+    const total = track.offsetHeight - window.innerHeight;
+    const scrolled = clamp(-rect.top, 0, total);
+
+    // last 18% of the track is a "dwell" zone: t holds at 1 so the landing doesn't drift
+    const ANIMATION_PORTION = 0.82;
+    const effectiveTotal = total * ANIMATION_PORTION;
+    currentT = total > 0 ? clamp(scrolled / effectiveTotal, 0, 1) : 0;
+
+    // photon position — during landing, converge exactly onto the chip's center axis
+    // (the spiral's own endpoint doesn't sit exactly on-axis, which caused the off-center arrival)
+    const photonPos = curve.getPointAt(currentT);
+
+    // landing progress: 0 until near the very end, 1 once fully arrived
+    const landT = clamp((currentT - 0.9) / 0.1, 0, 1);
+    // phase 1 (0 -> 0.5 of landT): arrive, settle close and head-on
+    // phase 2 (0.5 -> 1 of landT): dolly back to reveal the whole chip + connectors
+    const arrivalRaw = clamp(landT / 0.5, 0, 1);
+    const arrivalEase = arrivalRaw * arrivalRaw * (3 - 2 * arrivalRaw);
+    const revealRaw = clamp((landT - 0.5) / 0.5, 0, 1);
+    const revealEase = revealRaw * revealRaw * (3 - 2 * revealRaw);
+
+    photonGroup.position.set(
+      THREE.MathUtils.lerp(photonPos.x, 0, landT),
+      THREE.MathUtils.lerp(photonPos.y, 0, landT),
+      THREE.MathUtils.lerp(photonPos.z, chipZ, landT)
+    );
+    landingT = landT; // exposed to the animate loop, for fading the photon and checkpoint nodes out
+
+    // camera normally trails behind photon along the curve...
+    const camT = clamp(currentT - 0.035, 0, 1);
+    const curveCamPos = curve.getPointAt(camT);
+    curveCamPos.y += 0.5;
+
+    // ...arrives close and head-on...
+    const closeCamPos = new THREE.Vector3(0, 0, chipZ + 8);
+    // ...then pulls back to reveal the full chip and its connectors
+    const wideCamPos = new THREE.Vector3(0, 0, chipZ + 32);
+
+    const finalCamPos = curveCamPos.clone();
+    finalCamPos.lerp(closeCamPos, arrivalEase);
+    finalCamPos.lerp(wideCamPos, revealEase);
+    camera.position.copy(finalCamPos);
+
+    const chipCenter = new THREE.Vector3(0, 0, chipZ);
+    const finalLookAt = photonPos.clone();
+    finalLookAt.lerp(chipCenter, arrivalEase);
+    // lookAt target during reveal stays at chip center, so no further lerp needed
+    camera.lookAt(finalLookAt.x, finalLookAt.y, finalLookAt.z);
+
+    const diveFov = 60 + currentT * currentT * 18;
+    camera.fov = THREE.MathUtils.lerp(diveFov, 50, arrivalEase);
+    camera.updateProjectionMatrix();
+
+    // bright trail segment behind photon
+    const trailStartT = clamp(currentT - 0.05, 0, 1);
+    const trailPts = [];
+    const steps = 16;
+    for (let i = 0; i <= steps; i++){
+      const u = trailStartT + (currentT - trailStartT) * (i / steps);
+      trailPts.push(curve.getPointAt(clamp(u, 0, 1)));
+    }
+    trailLine.geometry.dispose();
+    trailLine.geometry = new THREE.BufferGeometry().setFromPoints(trailPts);
+
+    // nearest checkpoint -> beat text + progress dots (fades out as we land)
+    let nearestIdx = 0;
+    let nearestDist = Infinity;
+    nodes.forEach((n, i) => {
+      const d = Math.abs(currentT - n.baseT);
+      if (d < nearestDist){ nearestDist = d; nearestIdx = i; }
+    });
+    const data = sectionsData[nearestIdx];
+    const fadeT = clamp(1 - nearestDist * 9, 0, 1) * (1 - landT);
+    headline.textContent = data.title;
+    subline.textContent = data.text;
+    eyebrow.textContent = data.label;
+    headline.style.opacity = fadeT;
+    subline.style.opacity = fadeT;
+    eyebrow.style.opacity = fadeT;
+    dots.forEach((d, i) => d.classList.toggle('active', i === nearestIdx && landT < 0.5));
+    document.getElementById('progress').style.opacity = 1 - landT;
+
+    // edge ports + labels fade in during the pull-back reveal
+    connectors.forEach((c, i) => {
+      c.padMaterial.opacity = revealEase * 0.85;
+      c.headMaterial.opacity = revealEase * 0.95;
+
+      const screenPos = projectToScreen(c.headMesh);
+      const el = labelEls[i];
+      el.style.left = screenPos.x + 'px';
+      el.style.top = screenPos.y + 'px';
+      el.style.opacity = revealEase;
+      el.style.pointerEvents = revealEase > 0.6 ? 'auto' : 'none';
+    });
+    chipGlow.userData.landT = landT;
+  }
+
+  window.addEventListener('scroll', updateFromScroll, { passive: true });
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // ---------- ANIMATION LOOP (continuous shimmer, independent of scroll) ----------
+  const clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    nodes.forEach((n) => {
+      n.shell.rotation.y = t * 0.15;
+      n.shell.rotation.x = t * 0.08;
+      const dist = Math.abs(currentT - n.baseT);
+      const activation = clamp(1 - dist * 8, 0, 1);
+      const pulse = 1 + Math.sin(t * 2 + n.baseT * 10) * 0.05;
+      const boost = 1 + activation * 0.6;
+      const nodeFade = 1 - landingT; // checkpoint nodes have no business being visible once we've landed
+      n.core.scale.setScalar(pulse * boost);
+      n.halo.scale.setScalar(pulse * (1 + activation * 0.8));
+      n.halo.material.opacity = (0.16 + activation * 0.35) * nodeFade;
+      n.shell.material.opacity = (0.45 + activation * 0.4) * nodeFade;
+      n.core.material.opacity = 0.9 * nodeFade;
+      n.orbitSpins.forEach((spin, ri) => { spin.rotation.z += (0.006 + ri * 0.003) * (1 + activation * 1.5); });
+      n.rings.forEach((r) => { r.material.opacity = (0.28 + activation * 0.4) * nodeFade; });
+    });
+
+    const photonFade = 1 - clamp((landingT - 0.5) / 0.5, 0, 1) * 0.85;
+    photonCore.scale.setScalar((1 + Math.sin(t * 6) * 0.08) * photonFade);
+    photonHalo.scale.setScalar((1 + Math.sin(t * 6) * 0.12) * photonFade);
+    photonOuterGlow.material.opacity = 0.18 * photonFade;
+    photonHalo.material.opacity = 0.5 * photonFade;
+
+    const nearChip = clamp((currentT - 0.75) / 0.25, 0, 1);
+    chipGlow.material.opacity = 0.15 + Math.sin(t * 2.4) * 0.05 + nearChip * 0.35;
+    chipGlow.scale.setScalar(1 + Math.sin(t * 1.6) * 0.06 + nearChip * 0.4);
+
+    stars.rotation.y = t * 0.005;
+
+    renderer.render(scene, camera);
+  }
+
+  updateFromScroll();
+  animate();
+})();
+</script>
+</body>
+</html>
