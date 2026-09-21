@@ -177,6 +177,7 @@
   .about-hero { text-align: center; margin-bottom: 48px; }
   .name-hero { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; margin: 0 0 10px 0; }
   .about-tagline { color: var(--text-dim); font-size: 1.05rem; }
+  .about-bio { color: var(--text-dim); line-height: 1.65; max-width: 58ch; margin: 22px auto 26px; }
   .lang-meters { display: flex; flex-direction: column; gap: 18px; max-width: 420px; margin: 0 auto; }
   .lang-row { display: flex; align-items: center; gap: 14px; }
   .lang-name { width: 90px; text-align: left; font-size: 0.92rem; flex-shrink: 0; }
@@ -296,9 +297,9 @@
     <div id="vignette"></div>
 
     <div id="copy">
-      <div class="eyebrow" id="eyebrow">Init</div>
-      <h1 id="headline">Photon entering the circuit</h1>
-      <p id="subline">Everything on this site starts here — follow the light.</p>
+      <div class="eyebrow" id="eyebrow">Intro</div>
+      <h1 id="headline">Hi, I'm Davide</h1>
+      <p id="subline">Quantum engineering student at Politecnico di Torino.</p>
     </div>
 
     <div id="progress">
@@ -320,6 +321,8 @@
     <div class="about-hero">
       <div class="name-hero">Davide Donati</div>
       <div class="about-tagline">Quantum engineering student, builder, competitive volleyball player.</div>
+      <p class="about-bio">I'm a Master's student in Quantum Engineering at Politecnico di Torino and a member of QubiTO, Italy's first quantum computing student team. I have a background in computer science and AI from the University of Bologna, and I like projects where software meets real hardware. Outside of work I play volleyball at a professional level.</p>
+      <a class="cv-button" href="Curriculum-Vitae.pdf" download="Davide_Donati_CV.pdf">Download CV</a>
     </div>
     <div class="lang-meters">
       <div class="lang-row"><span class="lang-name">English</span><div class="lang-track"><div class="lang-fill" style="width:95%"></div></div><span class="lang-level">C2</span></div>
@@ -440,17 +443,17 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27ZM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
       </a>
     </div>
-    <a id="cv-download" class="cv-button" href="Davide_Donati_CV.pdf" download>Download CV</a>
+    <a id="cv-download" class="cv-button" href="Curriculum-Vitae.pdf" download="Davide_Donati_CV.pdf">Download CV</a>
   </div>
 </div>
 
 <script>
 (function(){
   const sectionsData = [
-    { label: 'Init', title: 'Quantum engineering student', text: 'Politecnico di Torino.' },
-    { label: '01',   title: 'I like building things', text: 'software, hardware, whatever the problem needs.' },
-    { label: '02',   title: 'Some past projects', text: 'a browser chess app, an OS kernel exercise, and more.' },
-    { label: '03',   title: 'Currently exploring', text: 'quantum computing, and where it meets real hardware.' }
+    { label: 'Intro', title: 'Hi, I\'m Davide', text: 'Quantum engineering student at Politecnico di Torino.' },
+    { label: '01',    title: 'Software and hardware', text: 'I enjoy working across the stack, from code to electronics.' },
+    { label: '02',    title: 'Selected projects', text: 'A chess web app, an operating system kernel, a quantum machine learning thesis.' },
+    { label: '03',    title: 'Right now', text: 'Research on quantum algorithms and qubit control electronics.' }
   ];
   const CHECKPOINT_COUNT = sectionsData.length;
 
