@@ -3,8 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Davide Donati</title>
-<link rel="icon" type="image/png" href="favicon.png?v=2">
+<title>Davide Donati – Quantum Engineering</title>
+<meta name="description" content="Quantum Engineering Master's student at Politecnico di Torino, looking for a 6-month quantum internship (software or hardware) from February/March 2027.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Davide Donati – Quantum Engineering">
+<meta property="og:description" content="Quantum Engineering student at Politecnico di Torino: error mitigation, compilation, quantum networks, qubit control electronics and HPC. Looking for a 6-month quantum internship from Feb/Mar 2027.">
+<meta property="og:url" content="https://tucanocode04.github.io/Personal_Page/">
+<meta property="og:image" content="https://tucanocode04.github.io/Personal_Page/favicon.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="favicon.png?v=3">
+<link rel="apple-touch-icon" href="favicon.png?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -93,7 +101,7 @@
   .tagline { font-size: clamp(1.1rem, 1.7vw, 1.3rem); line-height: 1.45; margin-bottom: 18px; }
   .bio { color: var(--muted); max-width: 58ch; margin-bottom: 28px; }
   .langs { background: var(--card); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
-  .lang-row { display: grid; grid-template-columns: 76px 1fr 30px; align-items: center; gap: 14px; font-size: .94rem; }
+  .lang-row { display: grid; grid-template-columns: 76px 1fr 52px; align-items: center; gap: 14px; font-size: .94rem; }
   .lang-track { height: 6px; border-radius: 999px; background: rgba(255, 255, 255, .1); overflow: hidden; }
   .lang-fill { height: 100%; border-radius: 999px; background: var(--fg); }
   .lang-level { text-align: right; font-size: .8rem; font-weight: 600; color: var(--hl); }
@@ -113,6 +121,24 @@
   .card .meta .tag { color: var(--fg); }
   .card h3 { font-size: 1.08rem; font-weight: 600; letter-spacing: -.015em; margin: 16px 0 6px; overflow-wrap: anywhere; }
   .card p { color: var(--muted); font-size: .9rem; line-height: 1.55; }
+  a.card { text-decoration: none; color: var(--fg); transition: background .15s, transform .15s; }
+  a.card:hover { background: color-mix(in srgb, var(--card) 85%, var(--fg)); }
+  a.card:hover h3 { color: var(--hl); }
+  .card .card-link { margin-top: auto; padding-top: 14px; font-size: .8rem; font-weight: 600; color: var(--hl); }
+  .other { margin-top: 28px; }
+  .other-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; list-style: none; }
+  .other-list li { background: var(--card); border-radius: 999px; padding: 7px 14px; font-size: .85rem; color: var(--muted); }
+  .other-list li b { color: var(--fg); font-weight: 600; }
+
+  /* ---------- skills ---------- */
+  .skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .skill { background: var(--card); border-radius: 16px; padding: 22px; }
+  .skill h3 { font-size: 1.05rem; font-weight: 600; letter-spacing: -.015em; margin: 10px 0 0; }
+  .skill ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .skill li { font-size: .82rem; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .07); }
+  .cv-alt { font-size: .9rem; margin-left: 14px; white-space: nowrap; }
+  .exp-list { color: var(--muted); max-width: 60ch; padding-left: 18px; }
+  .exp-list li { margin-top: 4px; }
 
   /* ---------- contact ---------- */
   .contact-list { display: flex; flex-direction: column; gap: 10px; max-width: 520px; }
@@ -201,6 +227,7 @@
     <li><a href="#experience">Experience</a></li>
     <li><a href="#education">Education</a></li>
     <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
   <a class="btn btn-sm btn-white" href="Curriculum-Vitae-Quantum.pdf" download="Davide_Donati_CV.pdf">Download CV</a>
@@ -233,12 +260,14 @@
     <h2>Davide Donati</h2>
     <div class="about-grid">
       <div>
-        <p class="tagline">Quantum engineering student, builder, former competitive volleyball player.</p>
-        <p class="bio">I'm a Master's student in Quantum Engineering at Politecnico di Torino and a member of QubiTO, Italy's first quantum computing student team. I have a background in computer science and AI from the University of Bologna, and I like projects where software meets real hardware. I also spent several years playing volleyball at a professional level.</p>
+        <p class="tagline">Looking for a 6-month quantum internship, software or hardware, starting February/March 2027, possibly leading to my Master's thesis.</p>
+        <p class="bio">I'm a Master's student in Quantum Engineering at Politecnico di Torino and a member of QubiTO, Italy's first quantum computing student team. My main areas are quantum error mitigation, compilation and qubit routing, quantum networks, qubit control electronics (FPGA/RFSoC) and high-performance computing. I have a background in computer science and AI from the University of Bologna, I like projects where software meets real hardware, and I spent several years playing volleyball in Serie A.</p>
         <a class="btn btn-primary" href="Curriculum-Vitae-Quantum.pdf" download="Davide_Donati_CV.pdf">Download CV</a>
+        <a class="text-link cv-alt" href="Curriculum-Vitae-Quantum-Hardware.pdf" download="Davide_Donati_CV_Hardware.pdf">Hardware CV</a>
       </div>
       <div class="langs" aria-label="Languages">
         <div class="meta">Languages</div>
+        <div class="lang-row"><span>Italian</span><div class="lang-track"><div class="lang-fill" style="width:100%"></div></div><span class="lang-level">Native</span></div>
         <div class="lang-row"><span>English</span><div class="lang-track"><div class="lang-fill" style="width:95%"></div></div><span class="lang-level">C2</span></div>
         <div class="lang-row"><span>Spanish</span><div class="lang-track"><div class="lang-fill" style="width:65%"></div></div><span class="lang-level">B2</span></div>
         <div class="lang-row"><span>German</span><div class="lang-track"><div class="lang-fill" style="width:45%"></div></div><span class="lang-level">B1</span></div>
@@ -256,11 +285,31 @@
         <div class="meta">2025 — present</div>
         <div>
           <h3>QubiTO — Politecnico di Torino</h3>
-          <p>Member of Italy's first quantum computing student team, doing research on quantum algorithms and control electronics.</p>
+          <p>Member of Italy's first quantum computing student team: research on quantum technologies and science outreach.</p>
+          <ul class="exp-list">
+            <li>Built the website of the <a class="text-link" href="https://qubito.polito.it/hackathon/" target="_blank" rel="noopener">Qubito Quantum Hackathon 2026</a> (main partner: IQM) and helped develop the team's main site.</li>
+          </ul>
         </div>
       </div>
       <div class="row">
-        <div class="meta">Volleyball</div>
+        <div class="meta">Sep — Oct 2026</div>
+        <div>
+          <h3>Quantum Code Reviewer — PQID-Bench</h3>
+          <p>Reviewed AI-generated Qiskit code for correctness and physical plausibility, contributing to the benchmark.</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="meta">Hackathons</div>
+        <div>
+          <h3>Quantum Hackathons</h3>
+          <ul class="exp-list">
+            <li>QHack (PennyLane) — participant.</li>
+            <li>PushQuantum 2026 — Munich.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="meta">2022 — 2024</div>
         <div>
           <h3>Former Professional Volleyball Player</h3>
           <p><a class="text-link" href="https://www.legavolley.it/player/DON-DAV-00" target="_blank" rel="noopener">Player profile — Lega Volley →</a></p>
@@ -305,41 +354,70 @@
     <div class="eyebrow">Work</div>
     <h2>Projects</h2>
     <div class="grid">
+      <a class="card" href="https://github.com/TucanoCode04/ML-for-Quantum-Error-Mitigation" target="_blank" rel="noopener">
+        <div class="meta"><span class="tag">Error mitigation</span><span>2026 — present</span></div>
+        <h3>ML for Quantum Error Mitigation</h3>
+        <p>Reproducing Liao et al. (2023): random-forest and linear models that predict ideal ⟨Z<sub>i</sub>⟩ from noisy results, on IQM backends.</p>
+        <span class="card-link">GitHub →</span>
+      </a>
+      <a class="card" href="https://github.com/TucanoCode04/qrepeater" target="_blank" rel="noopener">
+        <div class="meta"><span class="tag">Networks</span><span>2026</span></div>
+        <h3>qnet — quantum-repeater simulator</h3>
+        <p>Modular NetSquid simulation of entanglement swapping, validated against analytic models with pytest.</p>
+        <span class="card-link">GitHub →</span>
+      </a>
+      <a class="card" href="https://github.com/TucanoCode04/QuantumHardware_lab03" target="_blank" rel="noopener">
+        <div class="meta"><span class="tag">Compilation</span><span>2026</span></div>
+        <h3>Noise-aware qubit routing compiler</h3>
+        <p>Qiskit routing with error-weighted shortest paths and lookahead, benchmarked on standard QASM circuits.</p>
+        <span class="card-link">GitHub →</span>
+      </a>
       <article class="card">
-        <div class="meta"><span class="tag">C++</span><span>2021</span></div>
-        <h3>gioco_UNIBO-Programmazione</h3>
-        <p>Programming course project, University of Bologna.</p>
+        <div class="meta"><span class="tag">Hardware</span><span>2026</span></div>
+        <h3>Qubit Electronics Lab</h3>
+        <p>FPGA/RFSoC work; Poisson–Schrödinger simulation of a SiMOS quantum dot with gate-barrier tuning.</p>
       </article>
-      <article class="card">
-        <div class="meta"><span class="tag">C</span><span>2023</span></div>
-        <h3>PandOS23</h3>
-        <p>Operating Systems course project, University of Bologna.</p>
-      </article>
-      <article class="card">
-        <div class="meta"><span class="tag">JavaScript</span><span>2023 — 2024</span></div>
-        <h3>Chesscake</h3>
-        <p>Software Engineering course project, University of Bologna.</p>
-      </article>
-      <article class="card">
-        <div class="meta"><span class="tag">JavaScript</span><span>2024</span></div>
-        <h3>Selfie</h3>
-        <p>Web Technologies course project, University of Bologna.</p>
-      </article>
+      <a class="card" href="https://github.com/TucanoCode04/Lab1-Quantum-Technologies" target="_blank" rel="noopener">
+        <div class="meta"><span class="tag">QKD</span><span>2026</span></div>
+        <h3>Quantum Technologies Lab</h3>
+        <p>BB84 QKD demonstration, single-photon detectors (SPAD) and backflash security.</p>
+        <span class="card-link">GitHub →</span>
+      </a>
+      <a class="card" href="https://github.com/TucanoCode04/HPC_Exam_Project_01" target="_blank" rel="noopener">
+        <div class="meta"><span class="tag">HPC</span><span>2026</span></div>
+        <h3>HPC Project</h3>
+        <p>Wave simulation with OpenMP, MPI and CUDA on Politecnico's cluster, profiled with VTune and Nsight.</p>
+        <span class="card-link">GitHub →</span>
+      </a>
       <article class="card">
         <div class="meta"><span class="tag">Thesis</span><span>2025</span></div>
         <h3>Bachelor's Thesis</h3>
-        <p>A hybrid quantum machine learning algorithm for reconstructing missing entries in a database.</p>
+        <p>Classical vs. quantum machine learning for missing data imputation, with a hybrid quantum circuit to compare their limits.</p>
       </article>
-      <article class="card">
-        <div class="meta"><span class="tag">Research</span><span>2025 — present</span></div>
-        <h3>Qubit Electronics Reports</h3>
-        <p>Independent research and reports on qubit control electronics.</p>
-      </article>
-      <article class="card">
-        <div class="meta"><span class="tag">HPC</span><span>2025 — present</span></div>
-        <h3>HPC Project</h3>
-        <p>Working with Politecnico di Torino's high-performance computing infrastructure.</p>
-      </article>
+    </div>
+    <div class="other">
+      <div class="meta">Other projects · University of Bologna</div>
+      <ul class="other-list">
+        <li><b>Chesscake</b> · chess-variants web app</li>
+        <li><b>Selfie</b> · calendar &amp; study web app</li>
+        <li><b>PandOS</b> · OS kernel in C</li>
+        <li><b>Programming Game</b> · endless RPG in C++</li>
+        <li><a class="text-link" href="https://github.com/TucanoCode04" target="_blank" rel="noopener">More on GitHub →</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="skills">
+  <div class="inner">
+    <div class="eyebrow">Toolbox</div>
+    <h2>Skills</h2>
+    <div class="skills">
+      <div class="skill"><div class="meta">01</div><h3>Quantum</h3><ul><li>Qiskit</li><li>PennyLane</li><li>NetSquid</li><li>IQM</li></ul></div>
+      <div class="skill"><div class="meta">02</div><h3>Hardware</h3><ul><li>FPGA</li><li>RFSoC</li><li>LTspice</li><li>Quantum-dot simulation</li></ul></div>
+      <div class="skill"><div class="meta">03</div><h3>HPC</h3><ul><li>OpenMP</li><li>MPI</li><li>CUDA</li><li>SLURM</li></ul></div>
+      <div class="skill"><div class="meta">04</div><h3>Programming</h3><ul><li>Python</li><li>C/C++</li><li>MATLAB</li><li>Java</li></ul></div>
+      <div class="skill"><div class="meta">05</div><h3>Machine learning</h3><ul><li>scikit-learn</li><li>TensorFlow/Keras</li></ul></div>
     </div>
   </div>
 </section>
@@ -357,15 +435,18 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         <span><span class="meta">Phone</span><span>+39 331 907 6926</span></span>
       </a>
+      <a class="contact-item" href="https://www.linkedin.com/in/davide-donati-82992133b/" target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27ZM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
+        <span><span class="meta">LinkedIn</span><span>davide-donati</span></span>
+      </a>
+      <a class="contact-item" href="https://github.com/TucanoCode04" target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.98 5.24.98 11.52c0 4.98 3.23 9.2 7.71 10.69.56.1.77-.24.77-.54v-1.9c-3.14.68-3.8-1.51-3.8-1.51-.51-1.31-1.25-1.66-1.25-1.66-1.02-.7.08-.69.08-.69 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.94.1-.73.39-1.22.71-1.5-2.51-.29-5.15-1.26-5.15-5.6 0-1.24.44-2.25 1.16-3.04-.12-.29-.5-1.44.11-3 0 0 .95-.3 3.12 1.16a10.9 10.9 0 0 1 5.68 0c2.17-1.46 3.12-1.16 3.12-1.16.61 1.56.23 2.71.11 3 .72.79 1.16 1.8 1.16 3.04 0 4.35-2.65 5.31-5.17 5.59.4.35.76 1.03.76 2.09v3.09c0 .3.21.65.78.54 4.47-1.49 7.7-5.71 7.7-10.69C23.02 5.24 18.27.5 12 .5Z"/></svg>
+        <span><span class="meta">GitHub</span><span>TucanoCode04</span></span>
+      </a>
     </div>
     <div class="contact-foot">
       <a class="btn btn-white" id="cv-download" href="Curriculum-Vitae-Quantum.pdf" download="Davide_Donati_CV.pdf">Download CV</a>
-      <a class="icon-link" href="https://github.com/TucanoCode04" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.98 5.24.98 11.52c0 4.98 3.23 9.2 7.71 10.69.56.1.77-.24.77-.54v-1.9c-3.14.68-3.8-1.51-3.8-1.51-.51-1.31-1.25-1.66-1.25-1.66-1.02-.7.08-.69.08-.69 1.13.08 1.72 1.16 1.72 1.16 1 1.72 2.63 1.22 3.27.94.1-.73.39-1.22.71-1.5-2.51-.29-5.15-1.26-5.15-5.6 0-1.24.44-2.25 1.16-3.04-.12-.29-.5-1.44.11-3 0 0 .95-.3 3.12 1.16a10.9 10.9 0 0 1 5.68 0c2.17-1.46 3.12-1.16 3.12-1.16.61 1.56.23 2.71.11 3 .72.79 1.16 1.8 1.16 3.04 0 4.35-2.65 5.31-5.17 5.59.4.35.76 1.03.76 2.09v3.09c0 .3.21.65.78.54 4.47-1.49 7.7-5.71 7.7-10.69C23.02 5.24 18.27.5 12 .5Z"/></svg>
-      </a>
-      <a class="icon-link" href="https://www.linkedin.com/in/davide-donati-82992133b/" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27ZM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
-      </a>
+      <a class="text-link cv-alt" href="Curriculum-Vitae-Quantum-Hardware.pdf" download="Davide_Donati_CV_Hardware.pdf">Hardware CV</a>
     </div>
   </div>
 </section>
@@ -378,8 +459,8 @@
   const beats = [
     { label: 'Intro', title: "Hi, I'm <span class='hl'>Davide</span>", text: 'Quantum engineering student at Politecnico di Torino.' },
     { label: '01', title: 'Software and hardware', text: 'I enjoy working across the stack, from code to electronics.' },
-    { label: '02', title: 'Selected projects', text: 'A chess web app, an operating system kernel, a quantum machine learning thesis.' },
-    { label: '03', title: 'Right now', text: 'Research on quantum algorithms and qubit control electronics.' }
+    { label: '02', title: 'Selected projects', text: 'Error mitigation, qubit routing, quantum networks, qubit electronics and HPC.' },
+    { label: '03', title: 'Right now', text: 'Looking for a 6-month quantum internship from February/March 2027.' }
   ];
   const BG = 0x0b0b0d, VIOLET = 0x8b5cf6, MAGENTA = 0xec4899;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
